@@ -71,7 +71,9 @@ class Devise::CasSessionsController < Devise::SessionsController
   end
 
   def cas_login_url
-    ::Devise.cas_client.add_service_to_login_url(::Devise.cas_service_url(request.url, devise_mapping))
+    url = ::Devise.cas_client.add_service_to_login_url(::Devise.cas_service_url(request.url, devise_mapping))
+    url << "&" + hash_to_query(request.params) unless request.params.blank?
+    url
   end
   helper_method :cas_login_url
 
@@ -114,5 +116,16 @@ class Devise::CasSessionsController < Devise::SessionsController
       # Older rubycas-clients don't accept a service_url
       ::Devise.cas_client.logout_url(destination_url, follow_url)
     end
+  end
+
+  private
+
+  def hash_to_query(hash)
+    pairs = []
+    hash.each do |k, vals|
+      vals = [vals] unless vals.kind_of? Array
+      vals.each {|v| pairs << (v.nil? ? CGI.escape(k) : "#{CGI.escape(k)}=#{CGI.escape(v)}")}
+    end
+    pairs.join("&")
   end
 end

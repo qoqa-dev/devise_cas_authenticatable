@@ -109,11 +109,11 @@ module Devise
   def self.cas_action_url(base_url, mapping, action)
     u = URI.parse(base_url)
     u.query = nil
-    u.path = if mapping.respond_to?(:fullpath)
+    u.path = if mapping.respond_to?(:path)
       if ENV['RAILS_RELATIVE_URL_ROOT']
-        ENV['RAILS_RELATIVE_URL_ROOT'] + mapping.fullpath
+        ENV['RAILS_RELATIVE_URL_ROOT'] + '/' + mapping.path
       else
-        mapping.fullpath
+        "/" + mapping.path
       end
     else
       if ENV['RAILS_RELATIVE_URL_ROOT']
@@ -126,6 +126,7 @@ module Devise
     u.path << action
     u.to_s
   end
+
 end
 
 Devise.add_module(:cas_authenticatable,

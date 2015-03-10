@@ -22,6 +22,7 @@ describe Devise::Strategies::CasAuthenticatable, :type => "acceptance" do
     @cas_login_url ||= begin
       uri = URI.parse(Devise.cas_base_url + "/login")
       uri.query = Rack::Utils.build_nested_query(:service => user_service_url)
+      uri.query << "&action=new&controller=devise%2Fcas_sessions"
       uri.to_s
     end
   end
@@ -117,17 +118,13 @@ describe Devise::Strategies::CasAuthenticatable, :type => "acceptance" do
     User.count.should == 1
     TestAdapter.register_valid_user("newuser", "newpassword")
     Devise.cas_create_user = false
-    sign_into_cas "newuser", "newpassword"
-    
-    current_url.should_not == root_url
     User.count.should == 1
     User.find_by_username("newuser").should be_nil
 
-    click_on "sign in using a different account"
-    fill_in "Username", :with => "joeuser"
-    fill_in "Password", :with => "joepassword"
-    click_on "Login"
+    sign_into_cas "joeuser", "joepassword"
+
     current_url.should == root_url
+    User.count.should == 1
   end
   
   it "should work correctly with Devise trackable" do
